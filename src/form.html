@@ -89,21 +89,26 @@
   </div>
 
 
-<script src="js/style.js">
-if (document.getElementById("gid").value == 'medicare'){
-  document.getElementById("medicare").style.display="block"
-  document.getElementById("licence").style.display="none"
-  document.getElementById("passport").style.display="none"
-}
-else if (document.getElementById("gid").value == 'license') {
-  document.getElementById("license").style.display="block"
-  document.getElementById("medicare").style.display="none"
-  document.getElementById("passport").style.display="none"
-}
-else if (document.getElementById("gid").value == 'passport') {
-  document.getElementById("passport").style.display="block"
-  document.getElementById("license").style.display="none"
-  document.getElementById("medicare").style.display="none"
+<script src="js/style.js" charset="utf-8"></script>
+<script>
+  function leaveChange() {
+
+  if (document.getElementById("gid").value == 'medicare'){
+      document.getElementById("medicare").style.display="block"
+      document.getElementById("licence").style.display="none"
+      document.getElementById("passport").style.display="none"
+  }
+  else if (document.getElementById("gid").value == 'license') {
+      document.getElementById("license").style.display="block"
+      document.getElementById("medicare").style.display="none"
+      document.getElementById("passport").style.display="none"
+  }
+
+  else if (document.getElementById("gid").value == 'passport') {
+      document.getElementById("passport").style.display="block"
+      document.getElementById("license").style.display="none"
+      document.getElementById("medicare").style.display="none"
+  }
 }
 </script>
 </body>
