@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Cards Gallery</title>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/baguettebox.js/1.10.0/baguetteBox.min.css" />
+
+    <script src="../node_modules/web3/dist/web3.min.js"></script>
+    <link rel="stylesheet" href="cards-gallery.css">
+</head>
+<body>
+   <section class="gallery-block cards-gallery">
+	    <div class="container">
+	        <div class="heading">
+	          <h2>Investor's Marketplace</h2>
+	        	<button id="addToArray" class="btn" onclick="pushObject(defaultObject)" > Borrow Requests </button>
+	        </div>
+	        <div id="borrowers" class="row">
+	        </div>
+	    </div>
+    </section>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/baguettebox.js/1.10.0/baguetteBox.min.js"></script>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+  		<script>
+    		
+
+			defaultObject = {"name": "Jamm", "address": "hahaha", "requiredAmount": 30, "coin": "ETH", "paybackTimeInDays": 50, "interestPercentage":40};
+
+      lendings = [{"name":"Mickey Spence", "address":"0x000111232332332", "requiredAmount":35, "coin":"ETH", "paybackTimeInDays":77, "interestPercentage":14},
+        {"name":"Jimmy Krakow", "address":"0x0007774838748", "requiredAmount":50, "coin":"ETH", "paybackTimeInDays":17, "interestPercentage":4},
+        {"name":"Xi Yuan", "address":"Nse8VcRFfWpkYyACMgaYrw4vtMnsT16P", "requiredAmount":35, "coin":"NULS", "paybackTimeInDays":20, "interestPercentage":10},
+        {"name":"Jason Vorhees", "address":"0x000111232332332", "requiredAmount":100, "coin":"ETH", "paybackTimeInDays":20, "interestPercentage":5}];
+
+
+  		if(typeof web3 !== 'undefined') {
+	    		web3 = new Web3(web3.currentProvider);
+	    	} else {
+	    		web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+	    	}
+
+	    	web3.eth.defaultAccount = web3.eth.accounts[0];
+
+	    	var LendingContract = web3.eth.contract();
+
+	    	var Lendings = LendingContract.at('0xcbb6dda0f2cf49e99375359fa5288820d6dabe45');
+
+	    	// We're using the instructorEvent (Coursro.Instuctor()) defined in the solidity smart comtract
+	    	var borrowingEvent = Lendings.borrowingContractInitialized({}, 'latest');
+
+	    	function pushObject(borrowObj){
+        		lendings.push(borrowObj);
+        		populate();
+	    	}
+
+	    	borrowingEvent.watch(function(error, result){
+	    		if(!error){
+	    			if(result.blockHash != $("#insTrans").html())
+	    				$('#loader').hide();
+
+	    			$('#insTrans').html('Block hash: ' + result.blockHash);
+	    			$('#instructor').html(web3.toAscii(result.args.fName)+' '+web3.toAscii(result.args.lName)+' ('+ result.args.age+' years old)');
+	    			$('#error').text("");
+	    		} else {
+
+        		pushObject({"name": "No Name", "address": web3.toAscii(result.args.borrowerAddress), "requiredAmount": web3.toAscii(result.args.amount), "coin": "ETH", "paybackTimeInDays": 50, "interestPercentage":40});
+	    			
+	    			$('#loader').hide();
+	    		}
+	    	});
+
+
+	    </script>
+	    <script>
+
+        baguetteBox.run('.cards-gallery', { animation: 'slideIn'});
+        
+        function populate() {
+
+        	var borrowers = document.getElementById("borrowers");
+
+        	borrowers.innerHTML = "";
+
+	        for (var i = lendings.length - 1; i >= 0; i--) {
+	        	console.log(lendings[i])
+
+	        	var parentDiv = document.createElement("div");
+	        	parentDiv.id = lendings[i]["address"];
+	        	parentDiv.className = "col-md-6 col-lg-4";
+
+	        	var borderDiv = document.createElement("div");
+	        	borderDiv.className = "card border-0 transform-on-hover";
+
+	        	parentDiv.appendChild(borderDiv);
+
+						var cardDiv = document.createElement("div");
+	        	cardDiv.className = "card-body";
+	        	borderDiv.appendChild(cardDiv);
+
+	        	var nameElement = document.createElement("h5");
+	        	nameElement.textContent = lendings[i]["name"];
+	        	cardDiv.appendChild(nameElement);
+
+						var addressP = document.createElement("p");
+	        	addressP.className = "subtitle";
+	        	addressP.textContent = "Address: "+ lendings[i]["address"];
+	        	cardDiv.appendChild(addressP);
+
+						var amount = document.createElement("p");
+	        	amount.className = "";
+	        	amount.textContent = "Amount: "+ lendings[i]["requiredAmount"]+" "+lendings[i]["coin"];
+	        	cardDiv.appendChild(amount);
+
+						var amount = document.createElement("p");
+	        	amount.className = "";
+	        	amount.textContent = "Payback Time in Days: "+ lendings[i]["paybackTimeInDays"];
+	        	cardDiv.appendChild(amount);
+						
+						var amount = document.createElement("p");
+	        	amount.className = "";
+	        	amount.textContent = "Interest: "+ lendings[i]["interestPercentage"];
+	        	cardDiv.appendChild(amount);
+
+						var button = document.createElement("button");
+						button.id = lendings[i]["address"];
+	        	button.className = "btn btn-success";
+	        	button.textContent = "Fund This";
+
+	        	button.onclick = function(){
+	        		alert("Are you sure you want to fund this person? ");
+	        	}
+
+	        	cardDiv.appendChild(button);
+	        	borrowers.appendChild(parentDiv);
+	        }
+	      }
+	    </script>
+</body>
+</html>

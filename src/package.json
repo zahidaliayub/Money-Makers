@@ -1,0 +1,25 @@
+{
+  "name": "money-makers",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "lite-server": "^2.4.0",
+    "web3": "^1.0.0-beta.36"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "lite-server"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/noelBorneo/Money-Makers.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/noelBorneo/Money-Makers/issues"
+  },
+  "homepage": "https://github.com/noelBorneo/Money-Makers#readme"
+}
