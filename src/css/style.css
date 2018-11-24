@@ -11,12 +11,27 @@ html {
 	/*background = gradient + image pattern combo*/
 	/* background:
 		linear-gradient(rgba(196, 102, 0, 0.6), rgba(155, 89, 182, 0.6)); */
-  background-color: #333;
 }
 
 body {
 	font-family: montserrat, arial, verdana;
+  background-color: #333;
 }
+
+input[type="date"]:before {
+	content: attr(placeholder) !important;
+	color: #777;
+	margin-right: 0.5em;
+}
+input[type="date"]:focus:before,
+input[type="date"]:valid:before {
+	content: "";
+}
+
+.medicare, .license, .passport {
+      display: none;
+}
+
 /*form styles*/
 #msform {
 	width: 400px;
@@ -93,7 +108,7 @@ body {
 	color: white;
 	text-transform: uppercase;
 	font-size: 9px;
-	width: 33.33%;
+	width: 25%;
 	float: left;
 	position: relative;
 }
