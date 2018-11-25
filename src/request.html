@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+  <title>Request Loan</title>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Request Loan</h1>
+  <form action="">
+    <label for="fname">First Name</label>
+    <input type="text" id="fname" placeholder="First Name" />
+    <label for="fname">Last Name</label>
+    <input type="text" id="lname" placeholder="Last Name" />
+    <br />
+    <br />
+    <label for="amount">Amount</label>
+    <input type="text" id="myText" placeholder="Loan Value" />
+    <select id="myCrypto" name="crypto">
+      <option value="ETH" selected>ETH</option>
+      <option value="NULS">NULS</option>
+    </select>
+
+    <br /><br />
+    <label for="paybackDate">Payback Date</label>
+    <input type="date" id="payback">
+
+    <br /><br />
+    <label for="interestRate">Interest Rate</label>
+    <input type="text" id="interestRate" />
+
+    <br /><br />
+    <button type="button" name="button" onclick="myFunction()">Request</button>
+  </form>
+  </div>
+  <p id="demo"></p>
+  <script type="text/javascript">
+    function myFunction() {
+      var txt;
+
+      let value = document.getElementById("myText").value;
+      let e = document.getElementById("myCrypto");
+      let text = e.options[e.selectedIndex].value;
+      let date = document.getElementById("payback").value;
+      let rate = document.getElementById("interestRate").value;
+
+
+      // check if date is more than the date specified
+      date_now = Math.round((new Date()).getTime() / 1000);
+      date_selected = Math.round((new Date(date)).getTime() / 1000);
+
+      // calculate the interestRate
+      rate = parseFloat(rate / 100) + parseInt(value);
+      console.log("Rate: ", rate);
+
+      if(date_now > date_selected) {
+        new_date = new Date(date_now*1000);
+        console.log("new", new_date);
+        alert("Invalid date selected. Date must be later than " +new_date);
+        return;
+      }
+      if (date == "") {
+        alert("Invalid date selected. Date is empty");
+        return;
+      }
+      value = String(rate);
+      date = String(date);
+
+
+      var question = prompt("This binds you to a legal agreement whereby you will have to pay \n"+value+" "+text+" by the "+date);
+      if (question == null || question == "") {
+        txt = "User has denied the agreement";
+        return null;
+      }
+      else {
+        txt = "User has agreed the contract details"
+        return true;
+      }
+    }
+  </script>
+</body>
+</html>
