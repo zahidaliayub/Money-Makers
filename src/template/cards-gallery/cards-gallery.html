@@ -8,7 +8,8 @@
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/baguettebox.js/1.10.0/baguetteBox.min.css" />
 
-    <script src="../node_modules/web3/dist/web3.min.js"></script>
+   	 <script src="../../node_modules/web3/dist/web3.min.js"></script> 
+    <!--<script language="javascript" type="text/javascript" src="../../js/web3.js-1.0.0-beta.36/web3.min.js"></script> -->
     <link rel="stylesheet" href="cards-gallery.css">
 </head>
 <body>
@@ -17,6 +18,7 @@
 	        <div class="heading">
 	          <h2>Investor's Marketplace</h2>
 	        	<button id="addToArray" class="btn" onclick="pushObject(defaultObject)" > Borrow Requests </button>
+	        	<button id="lend" class="btn btn-success" onclick="lendMoney()"> Lend Some Money! </button>
 	        </div>
 	        <div id="borrowers" class="row">
 	        </div>
@@ -27,7 +29,167 @@
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
   		<script>
     		
-
+  		var abi = [
+	{
+		"constant": false,
+		"inputs": [],
+		"name": "lend",
+		"outputs": [],
+		"payable": true,
+		"stateMutability": "payable",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "_name",
+				"type": "string"
+			}
+		],
+		"name": "setName",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"name": "_borrower",
+				"type": "address"
+			},
+			{
+				"name": "_borrowAmount",
+				"type": "uint256"
+			}
+		],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"name": "borrowerAddress",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"name": "amount",
+				"type": "uint256"
+			}
+		],
+		"name": "borrowingContractInitialized",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"name": "addresss",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"name": "amount",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"name": "lendersCount",
+				"type": "uint256"
+			}
+		],
+		"name": "showLenderInfo",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"name": "lenderCount",
+				"type": "uint256"
+			}
+		],
+		"name": "loanFulfilled",
+		"type": "event"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "borrowAmount",
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "borrower",
+		"outputs": [
+			{
+				"name": "",
+				"type": "address"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "borrowerName",
+		"outputs": [
+			{
+				"name": "",
+				"type": "string"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "deployer",
+		"outputs": [
+			{
+				"name": "",
+				"type": "address"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "totalLendedAmount",
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	}
+];
 			defaultObject = {"name": "Jamm", "address": "hahaha", "requiredAmount": 30, "coin": "ETH", "paybackTimeInDays": 50, "interestPercentage":40};
 
       lendings = [{"name":"Mickey Spence", "address":"0x000111232332332", "requiredAmount":35, "coin":"ETH", "paybackTimeInDays":77, "interestPercentage":14},
@@ -44,9 +206,11 @@
 
 	    	web3.eth.defaultAccount = web3.eth.accounts[0];
 
-	    	var LendingContract = web3.eth.contract();
+	    	var LendingContract = web3.eth.contract(abi);
+	    	//LendingContract.deploy({arguments:[web3.eth.defaultAccount, 20000000000000000000]});
 
-	    	var Lendings = LendingContract.at('0xcbb6dda0f2cf49e99375359fa5288820d6dabe45');
+
+	    	var Lendings = LendingContract.at('0x5486794e8576bb286d1a87616800d93b222a05d7');
 
 	    	// We're using the instructorEvent (Coursro.Instuctor()) defined in the solidity smart comtract
 	    	var borrowingEvent = Lendings.borrowingContractInitialized({}, 'latest');
@@ -56,7 +220,19 @@
         		populate();
 	    	}
 
-	    	borrowingEvent.watch(function(error, result){
+	    	function lendMoney(){
+    		Lendings.lend({from:web3.eth.defaultAccount, 
+    			value: web3.toWei("0.5", "ether")}, (error, result) => {
+    			if(error){
+	    			$("#loader").hide();
+	    			$('#error').text("Error, mate!");
+	    		} else {
+	    			console.log("Lending some money!! ");
+	    		}
+    		});
+    	}
+
+	    	/*borrowingEvent.watch(function(error, result){
 	    		if(!error){
 	    			if(result.blockHash != $("#insTrans").html())
 	    				$('#loader').hide();
@@ -70,7 +246,7 @@
 	    			
 	    			$('#loader').hide();
 	    		}
-	    	});
+	    	});*/
 
 
 	    </script>

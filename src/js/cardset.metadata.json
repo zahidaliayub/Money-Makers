@@ -1,0 +1,51 @@
+{
+    "id": "whatever",
+    "name": "start",
+    "cards": [
+        {
+            "id":"kazoo",
+            "name": "Kazoo Kid",
+            "abilities": [
+                {"name": "O.G", "level": 99},
+                {"name": "Coding", "level": 77}
+            ]
+        },
+        {
+            "id":"wow",
+            "name": "Wow Guy",
+            "abilities": [
+                {"name": "Saying WOW", "level": 99},
+                {"name": "Winking", "level": 77}
+            ]
+        },
+        {
+            "id":"pepe",
+            "name": "Pepe",
+            "abilities": [
+                {"name": "Smiling", "level": 99}
+            ]
+        },
+        {
+            "id":"clarence",
+            "name": "Clarity Clarence",
+            "abilities": [
+                {"name": "Deep Thinking", "level": 70},
+                {"name": "Dancing", "level": 30}
+            ]
+        },
+        {
+            "id":"howard",
+            "name": "Howard the alien",
+            "abilities": [
+                {"name": "Dancing", "level": 100}
+            ]
+        },
+        {
+            "id":"face-palm",
+            "name": "Face Palm",
+            "abilities": [
+                {"name": "Face Palming", "level": 67}
+            ]
+        }
+    ]
+}

@@ -5,7 +5,7 @@
   "main": "index.js",
   "dependencies": {
     "lite-server": "^2.4.0",
-    "web3": "^1.0.0-beta.36"
+    "web3": "github:ethereum/web3.js"
   },
   "devDependencies": {},
   "scripts": {
