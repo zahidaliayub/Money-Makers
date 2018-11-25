@@ -6,6 +6,8 @@
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+
+     <script src="node_modules/web3/dist/web3.min.js"></script> 
   <title>Request Loan</title>
 </head>
 <body>
@@ -36,8 +38,11 @@
 
     <br /><br />
     <button type="button" name="button" onclick="myFunction()">Request</button>
+          
   </form>
   </div>
+  <button id="requestLend" class="btn " onclick="requestLend()"> Request Some Money! </button>
+
   <p id="demo"></p>
   <script type="text/javascript">
     function myFunction() {
@@ -82,6 +87,129 @@
         return true;
       }
     }
+  </script>
+
+
+  <script>
+
+    if(typeof web3 !== 'undefined') {
+        web3 = new Web3(web3.currentProvider);
+      } else {
+        web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+      }
+
+      web3.eth.defaultAccount = web3.eth.accounts[0];
+
+      var abi = [
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "contractAddresses",
+    "outputs": [
+      {
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "borrowAmount",
+        "type": "uint256"
+      },
+      {
+        "name": "paybackTime",
+        "type": "uint256"
+      },
+      {
+        "name": "interest",
+        "type": "uint256"
+      }
+    ],
+    "name": "launchLendingContract",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "borrowerAddresses",
+    "outputs": [
+      {
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "name": "contractAddress",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "borrowAmount",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "name": "paybackTime",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "name": "interest",
+        "type": "uint256"
+      }
+    ],
+    "name": "showContractDetails",
+    "type": "event"
+  }
+];
+
+      var LendingContract = web3.eth.contract(abi);
+      var Lendings = LendingContract.at('0x216dfb00a828358c9ab7178a805da7dee752e62e');
+  
+      function requestLend(){
+          Lendings.launchLendingContract(10, 30, 4, {from:web3.eth.defaultAccount}, (error, result) => {
+            if(error){
+              $('#error').text("Error, mate!");
+            } else {
+              console.log("Requesting some money!! ");
+            }
+          });
+    }
+
+
   </script>
 </body>
 </html>
