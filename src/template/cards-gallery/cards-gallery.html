@@ -19,6 +19,7 @@
 	          <h2>Investor's Marketplace</h2>
 	        	<button id="addToArray" class="btn" onclick="pushObject(defaultObject)" > Borrow Requests </button>
 	        	<button id="lend" class="btn btn-success" onclick="lendMoney()"> Lend Some Money! </button>
+	        	<button id="requestLend" class="btn " onclick="requestLend()"> Request Some Money! </button>
 	        </div>
 	        <div id="borrowers" class="row">
 	        </div>
@@ -32,38 +33,39 @@
   		var abi = [
 	{
 		"constant": false,
-		"inputs": [],
-		"name": "lend",
-		"outputs": [],
-		"payable": true,
-		"stateMutability": "payable",
+		"inputs": [
+			{
+				"name": "borrower",
+				"type": "address"
+			}
+		],
+		"name": "getContractFromBorrower",
+		"outputs": [
+			{
+				"name": "",
+				"type": "address"
+			}
+		],
+		"payable": false,
+		"stateMutability": "nonpayable",
 		"type": "function"
 	},
 	{
 		"constant": false,
 		"inputs": [
 			{
-				"name": "_name",
-				"type": "string"
+				"name": "borrowAmount",
+				"type": "uint256"
 			}
 		],
-		"name": "setName",
+		"name": "launchLendingContract",
 		"outputs": [],
 		"payable": false,
 		"stateMutability": "nonpayable",
 		"type": "function"
 	},
 	{
-		"inputs": [
-			{
-				"name": "_borrower",
-				"type": "address"
-			},
-			{
-				"name": "_borrowAmount",
-				"type": "uint256"
-			}
-		],
+		"inputs": [],
 		"payable": false,
 		"stateMutability": "nonpayable",
 		"type": "constructor"
@@ -73,116 +75,45 @@
 		"inputs": [
 			{
 				"indexed": false,
-				"name": "borrowerAddress",
+				"name": "contractAddress",
 				"type": "address"
-			},
-			{
-				"indexed": false,
-				"name": "amount",
-				"type": "uint256"
 			}
 		],
-		"name": "borrowingContractInitialized",
+		"name": "showBorrowerContract",
 		"type": "event"
 	},
 	{
-		"anonymous": false,
+		"constant": true,
 		"inputs": [
 			{
-				"indexed": false,
-				"name": "addresss",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"name": "amount",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"name": "lendersCount",
+				"name": "",
 				"type": "uint256"
 			}
 		],
-		"name": "showLenderInfo",
-		"type": "event"
+		"name": "borrowerAddresses",
+		"outputs": [
+			{
+				"name": "",
+				"type": "address"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
 	},
 	{
-		"anonymous": false,
+		"constant": true,
 		"inputs": [
 			{
-				"indexed": false,
-				"name": "lenderCount",
-				"type": "uint256"
-			}
-		],
-		"name": "loanFulfilled",
-		"type": "event"
-	},
-	{
-		"constant": true,
-		"inputs": [],
-		"name": "borrowAmount",
-		"outputs": [
-			{
 				"name": "",
 				"type": "uint256"
 			}
 		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [],
-		"name": "borrower",
+		"name": "contractAddresses",
 		"outputs": [
 			{
 				"name": "",
 				"type": "address"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [],
-		"name": "borrowerName",
-		"outputs": [
-			{
-				"name": "",
-				"type": "string"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [],
-		"name": "deployer",
-		"outputs": [
-			{
-				"name": "",
-				"type": "address"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [],
-		"name": "totalLendedAmount",
-		"outputs": [
-			{
-				"name": "",
-				"type": "uint256"
 			}
 		],
 		"payable": false,
@@ -210,10 +141,10 @@
 	    	//LendingContract.deploy({arguments:[web3.eth.defaultAccount, 20000000000000000000]});
 
 
-	    	var Lendings = LendingContract.at('0x5486794e8576bb286d1a87616800d93b222a05d7');
+	    	var Lendings = LendingContract.at('0xf2ac9e051cbe0c447b53139da0ed947b50774232');
 
 	    	// We're using the instructorEvent (Coursro.Instuctor()) defined in the solidity smart comtract
-	    	var borrowingEvent = Lendings.borrowingContractInitialized({}, 'latest');
+	    	//var borrowingEvent = Lendings.borrowingContractInitialized({}, 'latest');
 
 	    	function pushObject(borrowObj){
         		lendings.push(borrowObj);
@@ -230,6 +161,17 @@
 	    			console.log("Lending some money!! ");
 	    		}
     		});
+    	}
+
+	    	function requestLend(){
+	    		Lendings.launchLendingContract(10, {from:web3.eth.defaultAccount}, (error, result) => {
+	    			if(error){
+		    			$("#loader").hide();
+		    			$('#error').text("Error, mate!");
+		    		} else {
+		    			console.log("Requesting some money!! ");
+		    		}
+	    		});
     	}
 
 	    	/*borrowingEvent.watch(function(error, result){
