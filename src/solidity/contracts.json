@@ -133,7 +133,22 @@ LendingsContractABI = [
 		"type": "event"
 	}
 ];
+
 SingleLendingABI = [
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "getTotalLendedAmount",
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
 	{
 		"constant": true,
 		"inputs": [],
@@ -142,6 +157,20 @@ SingleLendingABI = [
 			{
 				"name": "",
 				"type": "string"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "getRequestedAmount",
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256"
 			}
 		],
 		"payable": false,

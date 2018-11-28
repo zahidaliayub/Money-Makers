@@ -103,10 +103,11 @@
 
       var LendingContract = web3.eth.contract(LendingsContractABI);
 
-      var LCInstance = LendingContract.at('0xb12345123312fcbedc8532ba1385218cf28326c7');
+      var LCInstance = LendingContract.at('0x193711604debb1c90636fbf5e39f1f210865b2a6');
   
       function requestLend(){
-        LCInstance.launchLendingContract(10, 30, 4, {from:web3.eth.defaultAccount}, (error, result) => {
+       console.log(web3.eth.defaultAccount);
+        LCInstance.launchLendingContract("Jackson", 10, 30, 4, {from:web3.eth.defaultAccount}, (error, result) => {
           if(error){
             $('#error').text("Error, mate!");
           } else {

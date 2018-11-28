@@ -25,12 +25,7 @@ contract LendingContract {
     );
 
     function launchLendingContract(string memory name, uint borrowAmount, uint paybackTime, uint interest) public {
-        
-        if (contracts[msg.sender] != address(0)){
-            emit errorMessage("You already have another lending contract! Wait for it to be fulfilled before you post another one.");
-            return;
-        }
-        
+        require (contracts[msg.sender] == address(0));
         Lending cont = new Lending(msg.sender, borrowAmount);
         contracts[msg.sender] = address(cont);
         contractAddresses.push(address(cont)) -1;
@@ -71,17 +66,17 @@ contract Lending {
     );
     
     event showLenderInfo (
-    	address addresss,
-    	uint amount,
-    	uint lendersCount
+        address addresss,
+        uint amount,
+        uint lendersCount
     );
     
     event loanFulfilled (
-    	uint lenderCount
+        uint lenderCount
     );
 
     constructor (address payable _borrower, uint _borrowAmount) public {
-      	deployer = msg.sender;
+        deployer = msg.sender;
         borrower = _borrower;
         borrowAmount = _borrowAmount*10**18;
         totalLendedAmount = 0;
@@ -95,38 +90,38 @@ contract Lending {
         borrowerName = _name;
     }
 
- 	function lend() public payable {
-  		//check whether this lender paid this borrower before
- 		if (!lendersAvailable[msg.sender]){
- 			//add this lender to the list of lenders who paid this borrower
- 			lendersAvailable[msg.sender] = true;
- 		    //increas count of lenders
- 			numberOfLenders = numberOfLenders + 1;
- 			lenders[msg.sender] = Lender(msg.sender, 0);
- 		}
- 		
+    function lend() public payable {
+        //check whether this lender paid this borrower before
+        if (!lendersAvailable[msg.sender]){
+            //add this lender to the list of lenders who paid this borrower
+            lendersAvailable[msg.sender] = true;
+            //increas count of lenders
+            numberOfLenders = numberOfLenders + 1;
+            lenders[msg.sender] = Lender(msg.sender, 0);
+        }
+        
         //increase the amout a lender is giving to this borrower + total amount being lended
- 		lenders[msg.sender].lendAmount += msg.value;
- 		
- 		totalLendedAmount = totalLendedAmount + msg.value;
+        lenders[msg.sender].lendAmount += msg.value;
+        
+        totalLendedAmount = totalLendedAmount + msg.value;
 
- 		if (totalLendedAmount > borrowAmount + 0.01 ether) {
- 			msg.sender.transfer(totalLendedAmount - borrowAmount - 0.01 ether);
- 			
-    	    // transfer amount to borrower
-    	    borrower.transfer(borrowAmount);
-    	    
-    	    emit loanFulfilled(numberOfLenders);
- 		}
+        if (totalLendedAmount > borrowAmount + 0.01 ether) {
+            msg.sender.transfer(totalLendedAmount - borrowAmount - 0.01 ether);
+            
+            // transfer amount to borrower
+            borrower.transfer(borrowAmount);
+            
+            emit loanFulfilled(numberOfLenders);
+        }
 
- 		emit showLenderInfo(msg.sender, lenders[msg.sender].lendAmount, numberOfLenders);
-	}
-	
-	function getTotalLendedAmount() public view returns (uint) {
-	    return totalLendedAmount;
-	}
-	
-	function getRequestedAmount() public view returns (uint) {
-	    return borrowAmount;
-	}
+        emit showLenderInfo(msg.sender, lenders[msg.sender].lendAmount, numberOfLenders);
+    }
+    
+    function getTotalLendedAmount() public view returns (uint) {
+        return totalLendedAmount;
+    }
+    
+    function getRequestedAmount() public view returns (uint) {
+        return borrowAmount;
+    }
 }
