@@ -58,6 +58,21 @@
 	font-size: 0.75rem;
 }
 
+.progress-bar {
+    margin-bottom: 30px;
+    width: 100%;
+    background-color: #dddddd;
+}
+
+.progressed {
+    width: 10%;
+    height: 30px;
+    background-color: #4CAF50;
+    text-align: center; /* To center it horizontally (if you want) */
+    line-height: 30px; /* To center it vertically */
+    color: white; 
+}
+
 @media (min-width: 576px) {
 
 	.gallery-block .transform-on-hover:hover {
