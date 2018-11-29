@@ -16,173 +16,202 @@
 	    <div class="container">
 	        <div class="heading">
 	          <h2>Investor's Marketplace</h2>
-	        	<button id="addToArray" class="btn" onclick="pushObject(defaultObject)" > Borrow Requests </button>
-	        	<button id="lend" class="btn btn-success" onclick="lendMoney()"> Lend Some Money! </button>
-      	    <button id="requestLend" class="btn " onclick="requestLend()"> Request Some Money! </button>
-
+	        	<button id="showLendingRequests" class="btn" onclick="getAllLoanRequests()" > Show Lending Requests </button>	
 	        	</div>
 	        <div id="borrowers" class="row">
+	        
+	        <!-- This is where the lend requests will be shown; this part is generated automatically when the "Show Lending Requests" button is pressed -->
+
 	        </div>
 	    </div>
     </section>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/baguettebox.js/1.10.0/baguetteBox.min.js"></script>
 
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
-  		<script>
-    		
-			defaultObject = {"name": "Jamm", "address": "hahaha", "requiredAmount": 30, "coin": "ETH", "paybackTimeInDays": 50, "interestPercentage":40};
+		<script>
 
-      lendings = [{"name":"Mickey Spence", "address":"0x000111232332332", "requiredAmount":35, "coin":"ETH", "paybackTimeInDays":77, "interestPercentage":14}];
+      baguetteBox.run('.cards-gallery', { animation: 'slideIn'});
 
+      lendings = [];
+      /*[{
+      	"name":"Mickey Spence", 
+      	"address":"0x000111232332332", 
+      	"requiredAmount":35, 
+      	"coin":"ETH", 
+      	"paybackTimeInDays":77, 
+      	"interestPercentage":14}];*/
+
+      // init web3 (ethereum)
   		if(typeof web3 !== 'undefined') {
-	    		web3 = new Web3(web3.currentProvider);
-	    	} else {
-	    		web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
-	    	}
+    		web3 = new Web3(web3.currentProvider);
+    	} else {
+    		web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+    	}
 
-	    	web3.eth.defaultAccount = web3.eth.accounts[0];
+    	web3.eth.defaultAccount = web3.eth.accounts[0];
 
-	    	var LendingContract = web3.eth.contract(LendingsContractABI);
+    	//init the lending contract and find it on the blockchain
+    	var LendingContract = web3.eth.contract(LendingsContractABI);
+    	var LCInstance = LendingContract.at('0x75123c4b7d86d7240915ef2d54faac4c14fe69e9');
 
-	    	var Lendings = LendingContract.at('0x193711604debb1c90636fbf5e39f1f210865b2a6');
+    	//add a new lending request to our list, whenever one is generated
+    	var borrowingEvent = LCInstance.showContractDetails({}, 'latest');
 
-	    	// We're using the instructorEvent (Coursro.Instuctor()) defined in the solidity smart comtract
-	    	var borrowingEvent = Lendings.showContractDetails({}, 'latest');
+    	borrowingEvent.watch(function(error, result){
+    		if(!error){
+					addRequestedLoanToList({"name": "Loading..."});
+    		} else {
+    			console.log("Lending request was generated but there was an error in displaying it:");
+    			console.log(error);
+    		}
+  		});
 
-	    	borrowingEvent.watch(function(error, result){
-	    		if(!error){
-						pushObject({"name":"Default Name", "address":result.args.contractAddress, "requiredAmount":result.args.borrowAmount, "coin":"ETH", "paybackTime":result.args.paybackTime, "interestPercentage":result.args.interest});
+    	function addRequestedLoanToList(object){
+    		if(object !== undefined)
+    			lendings.push(object);
+    		populatePageWithLoanRequests();
+    	}
 
-						console.log("lendings is: ", lendings);
-						console.log(JSON.stringify(lendings));
-						console.log("Event emmited!");
+    	function getProgressOfLoan(address){
+	    	var SingleLendingContract = web3.eth.contract(SingleLendingABI);
+	    	var SLInstance = SingleLendingContract.at(address);
+	    	console.log("Address is "+address);
 
+	    	SLInstance.getTotalLendedAmount({from:web3.eth.defaultAccount}, (error, result) => {
+	    		if(!error) {
+	    			SLInstance.getRequestedAmount({from:web3.eth.defaultAccount}, (error2, result2) => {
+							if(!error2) {
+								console.log("Results "+result+" "+result2);
+								return parseInt(100 * result/result2);
+							} else console.log(error2);
+						});
+	    		} else console.log(error);
+	    	});
+	    	return 0;
+	    }
+
+    	function lendMoney(value, address){
+	    	var SingleLendingContract = web3.eth.contract(SingleLendingABI);
+	    	var SLInstance = SingleLendingContract.at(address);
+
+    		SLInstance.lend({from:web3.eth.defaultAccount, 
+    			value: web3.toWei(value, "ether")}, (error, result) => {
+    			if(error){
+	    			console.log(error);
 	    		} else {
-	    			cosole.log("Error emitting event");
+	    			console.log("Lending some money!!");
 	    		}
     		});
+  		}
 
+  		function getAllLoanRequests(){
+  			lendings = [];
+  			LCInstance.getNumberOfBorrowers({from:web3.eth.defaultAccount}, (error, result) => {
+  				if(!error){
+  					console.log("We have "+result+" loans requested!");
 
-	    	function pushObject(borrowObj){
-      		lendings.push(borrowObj);
-      		populate();
-	    	}
+  					for(var i=0; i<result; i++){
+  						LCInstance.borrowerAddresses.call(i, {from:web3.eth.defaultAccount}, (error2, result2) => {
+  							if(!error2){
+  								console.log(result2);
+  								LCInstance.getContractAddressFromBorrower(result2, {from:web3.eth.defaultAccount}, (error3, result3) =>{
+  									if(!error3){
+								    	var SingleLendingContract = web3.eth.contract(SingleLendingABI);
+								    	var SLInstance = SingleLendingContract.at(result3);
 
-	    	function getProgressOfLoan(address){
-		    	var SingleLendingContract = web3.eth.contract(SingleLendingABI);
-		    	var SLInstance = SingleLendingContract.at(address);
+								    	SLInstance.getLendingContractInformation({from:web3.eth.defaultAccount}, (error4, result4) => {
+								    		if(!error4){
+								    			var newElement = {
+								    				"name":result4[0],
+								    				"address": result4[1],
+								    				"requiredAmount": result4[2]["c"][0],
+							    					"coin": "ETH",
+							    					"paybackTime": result4[3]["c"][0],
+							    					"interestPercentage": result4[4]["c"][0]
+							    				};
 
-		    	SLInstance.getTotalLendedAmount((error, result) => {
-		    		if(error){
-    					console.log("Error when getting total lended amount");
-		    		} else {
-		    			var lendedAmount = result;
-		    			SLInstance.getRequestedAmount((err, res) => {
-		    				if(err){
-		    					console.log("Error when getting requested amount");
-		    				} else {
-		    					var loanedRatio = lendedAmount/res;
-		    					return loanedRatio;
-		    				}
-		    			});
-		    		}
-		    	});
+								    			addRequestedLoanToList(newElement);
+								    		} else console.log(error4);
+								    	});
+  									}  else console.log(error3);
+  								});
+  							}  else console.log(error2);
+  						});
+						}
+  				} else console.log(error);
+  			});
+  		}
 
-	    	}
+      function populatePageWithLoanRequests() {
+      	var borrowers = document.getElementById("borrowers");
+      	borrowers.innerHTML = "";
+    		var len = lendings.length;
 
-	    	function lendMoney(val, address){
-		    	var SingleLendingContract = web3.eth.contract(SingleLendingABI);
-		    	var SLInstance = SingleLendingContract.at(address);
+        for (var i = len - 1; i >= 0; i--) {
+        	console.log("In populatePageWithLoanRequests(), lendings["+i+"] is ", lendings[i])
 
-	    		SLInstance.lend({from:web3.eth.defaultAccount, 
-	    			value: web3.toWei(val, "ether")}, (error, result) => {
-	    			if(error){
-		    			$("#loader").hide();
-		    			$('#error').text("Error, mate!");
-		    		} else {
-		    			console.log("Lending some money!!");
-		    		}
-	    		});
-    		}
+        	var parentDiv = document.createElement("div");
+        	parentDiv.id = lendings[i]["address"];
+        	parentDiv.className = "col-md-6 col-lg-4";
 
-        baguetteBox.run('.cards-gallery', { animation: 'slideIn'});
-        
-        function getAllLendingContracts(){
-        	return lendings;
+        	var borderDiv = document.createElement("div");
+        	borderDiv.className = "card border-0 transform-on-hover";
+
+        	parentDiv.appendChild(borderDiv);
+
+					var cardDiv = document.createElement("div");
+        	cardDiv.className = "card-body";
+        	borderDiv.appendChild(cardDiv);
+
+        	var nameElement = document.createElement("h5");
+        	nameElement.textContent = lendings[i]["name"];
+        	cardDiv.appendChild(nameElement);
+
+					var addressP = document.createElement("p");
+        	addressP.className = "subtitle";
+        	addressP.textContent = "Address: "+ lendings[i]["address"];
+        	cardDiv.appendChild(addressP);
+
+					var amount = document.createElement("p");
+        	amount.className = "";
+        	amount.textContent = "Amount: "+ lendings[i]["requiredAmount"]+" "+lendings[i]["coin"];
+        	cardDiv.appendChild(amount);
+
+					var amount = document.createElement("p");
+        	amount.className = "";
+        	amount.textContent = "Payback Time in Days: "+ lendings[i]["paybackTimeInDays"];
+        	cardDiv.appendChild(amount);
+					
+					var amount = document.createElement("p");
+        	amount.className = "";
+        	amount.textContent = "Interest: "+ lendings[i]["interestPercentage"];
+        	cardDiv.appendChild(amount);
+
+        	var progressBar = document.createElement("div");
+        	progressBar.className="progress-bar";
+        	var progressed = document.createElement("div");
+        	progressed.className="progressed";
+					progressed.style.width = getProgressOfLoan(lendings[i]['address']) + '%';
+        	progressBar.appendChild(progressed);
+        	cardDiv.appendChild(progressBar);
+
+					var bttn = document.createElement("button");
+					bttn.id = lendings[i]["address"];
+        	bttn.className = "btn btn-success";
+        	bttn.textContent = "Fund This";
+
+        	bttn.onclick = (function(iter, array, elem, function1, function2) {return function(){
+		    		alert("Are you sure you want to fund this person? ");
+						console.log(iter);
+						console.log(array[iter]);
+		    		function1(1, array[iter]["address"]);
+						elem.style.width = function2(array[iter]["address"]) + '%';
+        	}})(i, lendings, progressed, lendMoney, getProgressOfLoan);
+        	cardDiv.appendChild(bttn);
+
+        	borrowers.appendChild(parentDiv);
         }
-
-        function populate() {
-        	var borrowers = document.getElementById("borrowers");
-        	borrowers.innerHTML = "";
-      		var len = lendings.length;
-	        for (var i = len - 1; i >= 0; i--) {
-	        	console.log("In populate, lendings "+i+" is ", lendings[i])
-
-	        	var parentDiv = document.createElement("div");
-	        	parentDiv.id = lendings[i]["address"];
-	        	parentDiv.className = "col-md-6 col-lg-4";
-
-	        	var borderDiv = document.createElement("div");
-	        	borderDiv.className = "card border-0 transform-on-hover";
-
-	        	parentDiv.appendChild(borderDiv);
-
-						var cardDiv = document.createElement("div");
-	        	cardDiv.className = "card-body";
-	        	borderDiv.appendChild(cardDiv);
-
-	        	var nameElement = document.createElement("h5");
-	        	nameElement.textContent = lendings[i]["name"];
-	        	cardDiv.appendChild(nameElement);
-
-						var addressP = document.createElement("p");
-	        	addressP.className = "subtitle";
-	        	addressP.textContent = "Address: "+ lendings[i]["address"];
-	        	cardDiv.appendChild(addressP);
-
-						var amount = document.createElement("p");
-	        	amount.className = "";
-	        	amount.textContent = "Amount: "+ lendings[i]["requiredAmount"]+" "+lendings[i]["coin"];
-	        	cardDiv.appendChild(amount);
-
-						var amount = document.createElement("p");
-	        	amount.className = "";
-	        	amount.textContent = "Payback Time in Days: "+ lendings[i]["paybackTimeInDays"];
-	        	cardDiv.appendChild(amount);
-						
-						var amount = document.createElement("p");
-	        	amount.className = "";
-	        	amount.textContent = "Interest: "+ lendings[i]["interestPercentage"];
-	        	cardDiv.appendChild(amount);
-
-
-	        	var progressBar = document.createElement("div");
-	        	progressBar.className="progress-bar";
-	        	var progressed = document.createElement("div");
-	        	progressed.className="progressed";
-	        	progressBar.appendChild(progressed);
-	        	cardDiv.appendChild(progressBar);
-
-						var bttn = document.createElement("button");
-						bttn.id = lendings[i]["address"];
-	        	bttn.className = "btn btn-success";
-	        	bttn.textContent = "Fund This";
-
-	        	bttn.onclick = (function(iter, array, elem) {return function(){
-			    		alert("Are you sure you want to fund this person? ");
-							console.log(iter);
-							console.log(array[iter]);
-			    		lendMoney(1, array[iter]["address"]);
-							elem.style.width = getProgressOfLoan(array[iter]['address']) * 100 + '%';
-
-	        	}})(i, lendings, progressed);
-	        	cardDiv.appendChild(bttn);
-
-	        	borrowers.appendChild(parentDiv);
-	        }
-	      }
-
-      	
-	    </script>
+      }
+		</script>
 </body>
 </html>

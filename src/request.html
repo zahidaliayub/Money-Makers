@@ -23,7 +23,7 @@
     <br />
     <br />
     <label for="amount">Amount</label>
-    <input type="text" id="myText" placeholder="Loan Value" />
+    <input type="text" id="requestedAmount" placeholder="Requested Amount" />
     <select id="myCrypto" name="crypto">
       <option value="ETH" selected>ETH</option>
       <option value="NULS">NULS</option>
@@ -38,11 +38,11 @@
     <input type="text" id="interestRate" />
 
     <br /><br />
-    <button type="button" name="button" onclick="myFunction()">Request</button>
+    <button type="button" name="button" class="btn" onclick="myFunction()">Request Loan</button>
+    <!--<button id="requestLend" class="btn " onclick="requestLend()"> Request Some Money! </button> -->
           
   </form>
   </div>
-  <button id="requestLend" class="btn " onclick="requestLend()"> Request Some Money! </button>
 
   <p id="demo"></p>
   <script type="text/javascript">
@@ -50,18 +50,20 @@
     function myFunction() {
       var txt;
 
-      let value = document.getElementById("myText").value;
+      let value = parseFloat(document.getElementById("requestedAmount").value);
       let e = document.getElementById("myCrypto");
       let text = e.options[e.selectedIndex].value;
       let date = document.getElementById("payback").value;
       let rate = document.getElementById("interestRate").value;
+
+      let name = document.getElementById("fname").value+" "+document.getElementById("lname").value;
 
       // check if date is more than the date specified
       date_now = Math.round((new Date()).getTime() / 1000);
       date_selected = Math.round((new Date(date)).getTime() / 1000);
 
       // calculate the interestRate
-      rate = parseFloat(rate / 100) + parseInt(value);
+      rate = parseFloat(rate);
       console.log("Rate: ", rate);
 
       if(date_now > date_selected) {
@@ -71,20 +73,28 @@
         return;
       }
       if (date == "") {
-        alert("Invalid date selected. Date is empty");
+        //alert("Invalid date selected. Date is empty.");
+        //return;
+      }
+      if (rate < 5) {
+        alert("Payback Rate has to be higher than 5%");
         return;
       }
-      value = String(rate);
-      date = String(date);
+      if(value < 0.1 || value > 100){
+        alert("Loan value must be between 0.1 and 100.");
+        return;  
+      }
 
-
-      var question = prompt("This binds you to a legal agreement whereby you will have to pay \n"+value+" "+text+" by the "+date);
-      if (question == null || question == "") {
-        txt = "User has denied the agreement";
+      var question = prompt(String(name)+": This binds you to a legal agreement whereby you will have to pay "+String(value+value*rate/100)+" "+text+" by the "+String(date)+". By typing Y in the box you accept to abide by the agreement.");
+      if (question != "Y") {
+        console.log("User has denied the agreement");
         return null;
       }
       else {
-        txt = "User has agreed the contract details"
+        console.log("User has agreed to the contract details");
+
+        console.log(name+" "+value+" "+rate);
+        requestLend(name, value, 66, rate);
         return true;
       }
     }
@@ -102,12 +112,11 @@
       web3.eth.defaultAccount = web3.eth.accounts[0];
 
       var LendingContract = web3.eth.contract(LendingsContractABI);
-
-      var LCInstance = LendingContract.at('0x193711604debb1c90636fbf5e39f1f210865b2a6');
+      var LCInstance = LendingContract.at('0x75123c4b7d86d7240915ef2d54faac4c14fe69e9');
   
-      function requestLend(){
+      function requestLend(name, amount, paybackTimeInDays, interest){
        console.log(web3.eth.defaultAccount);
-        LCInstance.launchLendingContract("Jackson", 10, 30, 4, {from:web3.eth.defaultAccount}, (error, result) => {
+        LCInstance.launchLendingContract(name, amount, parseInt(paybackTimeInDays), parseInt(interest), {from:web3.eth.defaultAccount}, (error, result) => {
           if(error){
             $('#error').text("Error, mate!");
           } else {

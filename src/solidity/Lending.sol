@@ -13,43 +13,45 @@ contract LendingContract {
     }
         
     event showContractDetails(
-        string uname,
+        string borrowerName,
         address contractAddress,
-        uint borrowAmount,
+        uint requestedAmount,
         uint paybackTime,
         uint interest
     );
-    
-    event errorMessage (
-        string message
-    );
 
-    function launchLendingContract(string memory name, uint borrowAmount, uint paybackTime, uint interest) public {
+    function launchLendingContract(string memory borrowerName, uint requestedAmount, uint paybackTime, uint interest) public {
         require (contracts[msg.sender] == address(0));
-        Lending cont = new Lending(msg.sender, borrowAmount);
+        Lending cont = new Lending(borrowerName, msg.sender, requestedAmount, paybackTime, interest);
         contracts[msg.sender] = address(cont);
         contractAddresses.push(address(cont)) -1;
         borrowerAddresses.push(msg.sender) -1;
         
-        emit showContractDetails(name, address(cont), borrowAmount, paybackTime, interest);
+        emit showContractDetails(borrowerName, address(cont), requestedAmount, paybackTime, interest);
     }
         
     function getContractAddressFromBorrower(address borrower) public view returns (address) {
         return contracts[borrower];
     }
+    
+    function getNumberOfBorrowers() public view returns (uint){
+        return borrowerAddresses.length;
+    }
 }
 
     
 contract Lending {
+    address payable creator = 0xA901c9891Ff175125D51274359A507A20eC3Ef82;
+    
     address public deployer;
     address payable public borrower;
     
-    ///borrower details
     string public borrowerName;
+    uint256 public requestedAmount;
+    uint paybackTime;
+    uint interest;
     
-    uint256 public borrowAmount;
     uint public totalLendedAmount;
-    
     uint numberOfLenders;
 
     struct Lender {
@@ -60,14 +62,11 @@ contract Lending {
     mapping (address => Lender) lenders;
     mapping (address => bool) lendersAvailable;
     
-    event borrowingContractInitialized(
-        address payable borrowerAddress,
-        uint amount
-    );
-    
     event showLenderInfo (
-        address addresss,
-        uint amount,
+        address borrowerAddress,
+        uint requestedAmount,
+        uint paybackTime,
+        uint interest,
         uint lendersCount
     );
     
@@ -75,14 +74,15 @@ contract Lending {
         uint lenderCount
     );
 
-    constructor (address payable _borrower, uint _borrowAmount) public {
+    constructor (string memory _borrowerName, address payable _borrower, uint _requestedAmount, uint _paybackTime, uint _interest) public {
         deployer = msg.sender;
         borrower = _borrower;
-        borrowAmount = _borrowAmount*10**18;
+        requestedAmount = _requestedAmount*10**18;
+        paybackTime = _paybackTime;
+        interest = _interest;
         totalLendedAmount = 0;
         numberOfLenders = 0;
-        borrowerName = "default name";
-        emit borrowingContractInitialized(_borrower, _borrowAmount);
+        borrowerName = _borrowerName;
     }
     
     function setName(string memory _name) public {
@@ -105,23 +105,28 @@ contract Lending {
         
         totalLendedAmount = totalLendedAmount + msg.value;
 
-        if (totalLendedAmount > borrowAmount + 0.01 ether) {
-            msg.sender.transfer(totalLendedAmount - borrowAmount - 0.01 ether);
+        if (totalLendedAmount > requestedAmount + 0.01 ether) {
+            msg.sender.transfer(totalLendedAmount - requestedAmount - 0.01 ether);
             
             // transfer amount to borrower
-            borrower.transfer(borrowAmount);
+            borrower.transfer(requestedAmount);
+            
+            //transfer all the rest to contract creator
+            creator.transfer(address(this).balance);
             
             emit loanFulfilled(numberOfLenders);
         }
-
-        emit showLenderInfo(msg.sender, lenders[msg.sender].lendAmount, numberOfLenders);
+    }
+    
+    function getLendingContractInformation() public view returns (string memory name, address borrowerAddress, uint256 amount, uint payback, uint rate){
+        return (borrowerName, borrower, requestedAmount / 10**18, paybackTime, interest);
     }
     
     function getTotalLendedAmount() public view returns (uint) {
-        return totalLendedAmount;
+        return totalLendedAmount / 10**18;
     }
     
     function getRequestedAmount() public view returns (uint) {
-        return borrowAmount;
+        return requestedAmount / 10**18;
     }
 }

@@ -22,11 +22,11 @@ LendingsContractABI = [
 		"constant": false,
 		"inputs": [
 			{
-				"name": "name",
+				"name": "borrowerName",
 				"type": "string"
 			},
 			{
-				"name": "borrowAmount",
+				"name": "requestedAmount",
 				"type": "uint256"
 			},
 			{
@@ -83,6 +83,20 @@ LendingsContractABI = [
 		"type": "function"
 	},
 	{
+		"constant": true,
+		"inputs": [],
+		"name": "getNumberOfBorrowers",
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
 		"inputs": [],
 		"payable": false,
 		"stateMutability": "nonpayable",
@@ -93,7 +107,7 @@ LendingsContractABI = [
 		"inputs": [
 			{
 				"indexed": false,
-				"name": "uname",
+				"name": "borrowerName",
 				"type": "string"
 			},
 			{
@@ -103,7 +117,7 @@ LendingsContractABI = [
 			},
 			{
 				"indexed": false,
-				"name": "borrowAmount",
+				"name": "requestedAmount",
 				"type": "uint256"
 			},
 			{
@@ -118,18 +132,6 @@ LendingsContractABI = [
 			}
 		],
 		"name": "showContractDetails",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": false,
-				"name": "message",
-				"type": "string"
-			}
-		],
-		"name": "errorMessage",
 		"type": "event"
 	}
 ];
@@ -180,11 +182,55 @@ SingleLendingABI = [
 	{
 		"constant": true,
 		"inputs": [],
+		"name": "requestedAmount",
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
 		"name": "borrower",
 		"outputs": [
 			{
 				"name": "",
 				"type": "address"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "getLendingContractInformation",
+		"outputs": [
+			{
+				"name": "name",
+				"type": "string"
+			},
+			{
+				"name": "borrowerAddress",
+				"type": "address"
+			},
+			{
+				"name": "amount",
+				"type": "uint256"
+			},
+			{
+				"name": "payback",
+				"type": "uint256"
+			},
+			{
+				"name": "rate",
+				"type": "uint256"
 			}
 		],
 		"payable": false,
@@ -198,20 +244,6 @@ SingleLendingABI = [
 		"outputs": [],
 		"payable": true,
 		"stateMutability": "payable",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [],
-		"name": "borrowAmount",
-		"outputs": [
-			{
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
 		"type": "function"
 	},
 	{
@@ -259,11 +291,23 @@ SingleLendingABI = [
 	{
 		"inputs": [
 			{
+				"name": "_borrowerName",
+				"type": "string"
+			},
+			{
 				"name": "_borrower",
 				"type": "address"
 			},
 			{
-				"name": "_borrowAmount",
+				"name": "_requestedAmount",
+				"type": "uint256"
+			},
+			{
+				"name": "_paybackTime",
+				"type": "uint256"
+			},
+			{
+				"name": "_interest",
 				"type": "uint256"
 			}
 		],
@@ -281,24 +325,17 @@ SingleLendingABI = [
 			},
 			{
 				"indexed": false,
-				"name": "amount",
+				"name": "requestedAmount",
 				"type": "uint256"
-			}
-		],
-		"name": "borrowingContractInitialized",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": false,
-				"name": "addresss",
-				"type": "address"
 			},
 			{
 				"indexed": false,
-				"name": "amount",
+				"name": "paybackTime",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"name": "interest",
 				"type": "uint256"
 			},
 			{
