@@ -72,37 +72,54 @@
     		populatePageWithLoanRequests();
     	}
 
-    	function getProgressOfLoan(address){
-	    	var SingleLendingContract = web3.eth.contract(SingleLendingABI);
-	    	var SLInstance = SingleLendingContract.at(address);
-	    	console.log("Address is "+address);
+    	function getProgressOfLoan(borrowerAddress, elem){
 
-	    	SLInstance.getTotalLendedAmount({from:web3.eth.defaultAccount}, (error, result) => {
-	    		if(!error) {
-	    			SLInstance.getRequestedAmount({from:web3.eth.defaultAccount}, (error2, result2) => {
-							if(!error2) {
-								console.log("Results "+result+" "+result2);
-								return parseInt(100 * result/result2);
-							} else console.log(error2);
-						});
-	    		} else console.log(error);
-	    	});
+    		LCInstance.getContractAddressFromBorrower(borrowerAddress, (err, res) => {
+    			if(!err){
+    				var address = res;
+    				var SingleLendingContract = web3.eth.contract(SingleLendingABI);
+			    	var SLInstance = SingleLendingContract.at(address);
+			    	console.log("Address is "+address);
+
+			    	SLInstance.getTotalLendedAmount({from:web3.eth.defaultAccount}, (error, result) => {
+			    		if(!error) {
+			    			SLInstance.getRequestedAmount({from:web3.eth.defaultAccount}, (error2, result2) => {
+									if(!error2) {
+										console.log("Lended "+result+" out of "+result2);
+										var j = result/result2 * 100;
+										console.log(j);
+										elem.style.width = String(j) + "%"; 
+										return j;
+									} else console.log(error2);
+								});
+			    		} else console.log(error);
+			    	});
+			    }
+			    else console.log(err);
+    		});
+
 	    	return 0;
 	    }
 
-    	function lendMoney(value, address){
-	    	var SingleLendingContract = web3.eth.contract(SingleLendingABI);
-	    	var SLInstance = SingleLendingContract.at(address);
+    	function lendMoney(value, borrowerAddress){
 
-    		SLInstance.lend({from:web3.eth.defaultAccount, 
-    			value: web3.toWei(value, "ether")}, (error, result) => {
-    			if(error){
-	    			console.log(error);
-	    		} else {
-	    			console.log("Lending some money!!");
-	    		}
-    		});
-  		}
+    		LCInstance.getContractAddressFromBorrower(borrowerAddress, (err, res) => {
+    			if(!err){
+    				var address = res;
+			    	var SingleLendingContract = web3.eth.contract(SingleLendingABI);
+			    	var SLInstance = SingleLendingContract.at(address);
+
+		    		SLInstance.lend({from:web3.eth.defaultAccount, 
+		    			value: web3.toWei(value, "ether")}, (error, result) => {
+		    			if(error){
+			    			console.log(error);
+			    		} else {
+			    			console.log("Lending some money!!");
+			    		}
+		    		});
+		  		} else console.log(err);
+		  	});
+    	}
 
   		function getAllLoanRequests(){
   			lendings = [];
@@ -191,7 +208,7 @@
         	progressBar.className="progress-bar";
         	var progressed = document.createElement("div");
         	progressed.className="progressed";
-					progressed.style.width = getProgressOfLoan(lendings[i]['address']) + '%';
+					getProgressOfLoan(lendings[i]['address'], progressed);
         	progressBar.appendChild(progressed);
         	cardDiv.appendChild(progressBar);
 
@@ -201,11 +218,11 @@
         	bttn.textContent = "Fund This";
 
         	bttn.onclick = (function(iter, array, elem, function1, function2) {return function(){
-		    		alert("Are you sure you want to fund this person? ");
-						console.log(iter);
-						console.log(array[iter]);
-		    		function1(1, array[iter]["address"]);
-						elem.style.width = function2(array[iter]["address"]) + '%';
+			    		alert("Are you sure you want to fund this person? ");
+							console.log(iter);
+							console.log(array[iter]);
+			    		function1(1, array[iter]["address"]);
+							function2(array[iter]["address"], elem);
         	}})(i, lendings, progressed, lendMoney, getProgressOfLoan);
         	cardDiv.appendChild(bttn);
 
